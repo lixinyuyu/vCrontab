@@ -1,9 +1,9 @@
 <template>
     <div>
         <el-tabs type="border-card">
-            <el-tab-pane label="秒">
+            <!-- <el-tab-pane label="秒">
                 <CrontabSecond @update="updateContabValue" :check="checkNumber" ref="cronsecond"/>
-            </el-tab-pane>
+            </el-tab-pane> -->
 
             <el-tab-pane label="分钟">
                 <CrontabMin
@@ -69,7 +69,7 @@
                         <th>crontab完整表达式</th>
                     </thead>
                     <tbody>
-                        <td>
+                        <td v-if="showSecond">
                             <span>{{contabValueObj.second}}</span>
                         </td>
                         <td>
@@ -91,7 +91,7 @@
                             <span>{{contabValueObj.year}}</span>
                         </td>
                         <td>
-                            <span>{{contabValueString}}</span>
+                            <span>{{newContabValueString}}</span>
                         </td>
                     </tbody>
                 </table>
@@ -120,7 +120,7 @@ import CrontabResult from "./Crontab-Result.vue";
 export default {
     data() {
         return {
-            tabTitles: ["秒", "分钟", "小时", "日", "月", "周", "年"],
+            tabTitles: ["分钟", "小时", "日", "月", "周", "年"],
             tabActive: 0,
             myindex: 0,
             contabValueObj: {
@@ -131,7 +131,8 @@ export default {
                 mouth: "*",
                 week: "?",
                 year: ""
-            }
+            },
+            showSecond: false,
         };
     },
     name: "vcrontab",
@@ -143,6 +144,7 @@ export default {
             if (this.expression) {
                 let arr = this.expression.split(" ");
                 arr;
+                arr.unshift('*');
                 if (arr.length >= 6) {
                     //6 位以上是合法表达式
                     let obj = {
@@ -201,7 +203,9 @@ export default {
                     insVlaue = 3;
                 } else {
                     insVlaue = 4;
-                    this.$refs[refName].checkboxList = value.split(",");
+                    if (this.$refs[refName]) {
+                        this.$refs[refName].checkboxList = value.split(",");
+                    }
                 }
             } else if (name == "day") {
                 if (value === "*") {
@@ -231,7 +235,9 @@ export default {
                 } else if (value === "L") {
                     insVlaue = 6;
                 } else {
-                    this.$refs[refName].checkboxList = value.split(",");
+                    if (this.$refs[refName]) {
+                        this.$refs[refName].checkboxList = value.split(",");
+                    }
                     insVlaue = 7;
                 }
             } else if (name == "week") {
@@ -260,7 +266,9 @@ export default {
                         : (this.$refs[refName].weekday = indexArr[0]);
                     insVlaue = 5;
                 } else {
-                    this.$refs[refName].checkboxList = value.split(",");
+                    if (this.$refs[refName]) {
+                        this.$refs[refName].checkboxList = value.split(",");
+                    }
                     insVlaue = 7;
                 }
             } else if (name == "year") {
@@ -273,11 +281,15 @@ export default {
                 } else if (value.indexOf("/") > -1) {
                     insVlaue = 4;
                 } else {
-                    this.$refs[refName].checkboxList = value.split(",");
+                    if (this.$refs[refName]) {
+                        this.$refs[refName].checkboxList = value.split(",");
+                    }
                     insVlaue = 5;
                 }
             }
-            this.$refs[refName].radioValue = insVlaue;
+            if (this.$refs[refName]) {
+                this.$refs[refName].radioValue = insVlaue;
+            }
         },
         // 表单选项的子组件校验数字格式（通过-props传递）
         checkNumber(value, minLimit, maxLimit) {
@@ -296,7 +308,9 @@ export default {
         },
         // 填充表达式
         submitFill() {
-            this.$emit("fill", this.contabValueString);
+            // this.$emit("fill", this.contabValueString);
+            this.$emit("fill", this.newContabValueString);
+            this.$emit("beforeFill", this.contabValueString);
             this.hidePopup();
         },
         clearCron() {
@@ -322,6 +336,21 @@ export default {
             let str =
                 obj.second +
                 " " +
+                obj.min +
+                " " +
+                obj.hour +
+                " " +
+                obj.day +
+                " " +
+                obj.mouth +
+                " " +
+                obj.week +
+                (obj.year == "" ? "" : " " + obj.year);
+            return str;
+        },
+        newContabValueString: function() {
+            let obj = this.contabValueObj;
+            let str =
                 obj.min +
                 " " +
                 obj.hour +
