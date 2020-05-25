@@ -135,7 +135,7 @@ export default {
             showSecond: false,
         };
     },
-    name: "vcrontab",
+    name: "vcrontabself",
     props: ["expression"],
     methods: {
         resolveExp() {
